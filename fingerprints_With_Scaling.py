@@ -26,9 +26,9 @@ if second_monitor_window is None:
 # Ustaw obszar przechwytywania na podstawie współrzędnych okna
 mon = {
     'left': second_monitor_window.left // 2,
-    'top': 280,
-    'width': 730,
-    'height': 850
+    'top': int(second_monitor_window.height // 3.85),
+    'width': second_monitor_window.width // 4,
+    'height': int(second_monitor_window.height // 1.75)
 }
 
 # Przechwyć obraz z drugiego monitora
