@@ -3,10 +3,38 @@ import cv2
 from mss import mss
 import pygetwindow as gw
 import os
+import time
 
+def calculate_fps(prev_time):
+    current_time = time.time()
+    fps = 1 / (current_time - prev_time)
+    return fps, current_time
+
+template_paths = [
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_1.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_2.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_3.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_4.png"),
+    #os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "WholeFinger1.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_1.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_2.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_3.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_4.png"),
+    #os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "WholeFinger2.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_1.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_2.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_3.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_4.png"),
+    #os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "WholeFinger3.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_1.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_2.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_3.png"),
+    os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_4.png"),
+    #os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "WholeFinger4.png")
+]
 # Define scaling factors for multi-scale template matching
-scale_factors = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]  # Adjust as needed
-threshold = 0.6  # Adjust as needed
+scale_factors = [0.8, 0.9, 1, 1.1, 1.2]  # Adjust as needed
+threshold = 0.7  # Adjust as needed
 
 # Define colors for different folders
 folder_colors = {
@@ -33,14 +61,16 @@ if second_monitor_window is None:
 
 # Ustaw obszar przechwytywania na podstawie współrzędnych okna
 mon = {
-    'left': second_monitor_window.left // 2,
-    'top': int(second_monitor_window.height // 3.85),
-    'width': second_monitor_window.width // 4,
-    'height': int(second_monitor_window.height // 1.75)
+    'left': int(second_monitor_window.right +  2560/18*4),
+    'top': 320,
+    'width': int(second_monitor_window.width//4),
+    'height': second_monitor_window.height//5*4
 }
+print(mon)
 
 # Przechwyć obraz z drugiego monitora
 with mss() as sct:
+    prev_time = time.time()
     while True:
         screenShot = sct.grab(mon)
         img = np.array(screenShot)
@@ -49,24 +79,16 @@ with mss() as sct:
         img_rbg = screenShot
 
         # Load the templates
-        template_paths = [
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_1.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_2.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_3.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "1", "Finger1_4.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_1.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_2.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_3.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "2", "Finger2_4.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_1.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_2.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_3.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "3", "Finger3_4.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_1.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_2.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_3.png"),
-            os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", "4", "Finger4_4.png")
-        ]
+
+
+        # for folder in range(1, 5):
+        #     for name in range(1, 6):
+        #         if(name != 5):
+        #             template_paths.append(os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", folder, f"Finger{folder}_{name}.png"))
+        #         else:
+        #             template_paths.append(os.path.join(os.getcwd(), "GTA_V_Casino_Heist_Fingerprint_diagnosis", "images", folder, f"WholeFinger{folder}.png"))
+
+
         templates = [cv2.imread(path, 0) for path in template_paths]
 
         # Perform multi-scale template matching for each template
@@ -94,8 +116,10 @@ with mss() as sct:
                 # Draw rectangle around the match on the original image with corresponding color
                 cv2.rectangle(img, pt, pt_end, template_color, 2)
 
+        fps, prev_time = calculate_fps(prev_time)
+        print(f"FPS: {fps:.2f}", end="\r")
         # Display the result
-        cv2.imshow('test', img)
+        cv2.imshow('Fingerprint_CHECKER', img)
         if cv2.waitKey(33) & 0xFF in (
                 ord('q'),
                 27,
