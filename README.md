@@ -1,9 +1,3 @@
----
-runme:
-  id: 01HT03KFWXE8VT784HTJVVTMJ6
-  version: v3
----
-
 # Easy CV2 GTA V fingerprint recognition
 
 ## Work In Progress !
