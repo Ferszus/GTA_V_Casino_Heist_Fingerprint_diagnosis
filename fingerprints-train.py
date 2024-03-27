@@ -1,52 +1,40 @@
-import os 
+import time
 import cv2
-import numpy 
-import pickle
-from PIL import Image
+import numpy as np
+import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-image_dir = os.path.join(BASE_DIR, "images")
+# initialize the camera and grab a reference to the raw camera capture
+camera = cv2.VideoCapture(0) 
 
-face_cascade = cv2.CascadeClassifier('cascades\data\haarcascade_frontalface_default.xml')
-recognizer = cv2.face.LBPHFaceRecognizer_create()
+# allow the camera to warmup
+time.sleep(0.1)
 
+# capture frames from the camera
+while (True):
+    ret, frame = camera.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    image = frame
+    # we do something here
+    # we get the image or something then run some matching
+    # if we get a match, we draw a square on it or something
+    img_rbg = image
+    template = cv2.imread(os.getcwd() + r"\GTA_V_Casino_Heist_Fingerprint_diagnosis\images\1\Screenshot_1.crop.png", 0)
+    w, h = template.shape[::-1]
 
-current_id=0
-label_ids = {}
-y_labels = []
-x_train = []
+    res = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
 
-for root, firs, files in os.walk(image_dir):
-    for file in files:
-        if file.endswith("png") or file.endswith("jpg"):
-            path = os.path.join(root, file)
-            label = os.path.basename(root).replace(" ", "_").lower()
-            #print(label, path)
-            if not label in label_ids:
-                label_ids[label] = current_id
-                current_id += 1
+    threshold = 0.6
 
-            id_ = label_ids[label]
-            #print(label_ids)
-            #x_train.append(path)
-            #y_labels.append(label)
-            pil_image = Image.open(path).convert("L") #zamiana zdjecia na szare
-            size = (550, 550)
-            final_image = pil_image.resize(size, Image.LANCZOS)
-            image_array = numpy.array(final_image, "uint8") #zamiana pixeli kazdego zdjecia na numer [0-255]
-            #print(image_array)
-            faces = face_cascade.detectMultiScale(image_array, scaleFactor=1.5, minNeighbors=5)
+    loc = np.where(res >= threshold)
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(image, (pt[0], pt[1]), (pt[0] + w, pt[1] + h),
+              (0, 0, 255), 2)
+        
 
-            for(x, y, w, h) in faces:
-                roi = image_array[y:y+h, x:x+w]
-                x_train.append(roi)
-                y_labels.append(id_)
-
-#print(y_labels)
-#print(x_train)
-
-with open("labels.pickle", 'wb') as f:
-    pickle.dump(label_ids, f)
-
-recognizer.train(x_train, numpy.array(y_labels))
-recognizer.save("trainer.yml")
+    # show the frame
+    cv2.imshow("Frame", img_rbg)
+    
+    # if the `q` key was pressed, break from the loop
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord("q"):
+        break
