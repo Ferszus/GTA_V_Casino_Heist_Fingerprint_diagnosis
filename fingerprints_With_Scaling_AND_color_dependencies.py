@@ -8,6 +8,14 @@ import os
 scale_factors = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]  # Adjust as needed
 threshold = 0.6  # Adjust as needed
 
+# Define colors for different folders
+folder_colors = {
+    "1": (0, 0, 255),  # Red
+    "2": (255, 0, 0),  # Blue
+    "3": (0, 255, 0),  # Green
+    "4": (0, 255, 255)  # Yellow
+}
+
 # Pobierz wszystkie otwarte okna
 windows = gw.getAllWindows()
 
@@ -62,7 +70,10 @@ with mss() as sct:
         templates = [cv2.imread(path, 0) for path in template_paths]
 
         # Perform multi-scale template matching for each template
-        for template in templates:
+        for template_path, template in zip(template_paths, templates):
+            folder_name = os.path.basename(os.path.dirname(template_path))
+            template_color = folder_colors.get(folder_name, (0, 0, 0))  # Default color is black if folder not found
+
             found = None
             for scale_factor in scale_factors:
                 resized_gray = cv2.resize(gray, None, fx=scale_factor, fy=scale_factor)
@@ -80,8 +91,8 @@ with mss() as sct:
                 pt = (int(max_loc[0] / scale_factor), int(max_loc[1] / scale_factor))
                 pt_end = (int((max_loc[0] + w) / scale_factor), int((max_loc[1] + h) / scale_factor))
 
-                # Draw rectangle around the match on the original image
-                cv2.rectangle(img, pt, pt_end, (0, 0, 255), 2)
+                # Draw rectangle around the match on the original image with corresponding color
+                cv2.rectangle(img, pt, pt_end, template_color, 2)
 
         # Display the result
         cv2.imshow('test', img)
@@ -90,3 +101,4 @@ with mss() as sct:
                 27,
         ):
             break
+
